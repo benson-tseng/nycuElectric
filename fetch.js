@@ -56,5 +56,5 @@ async function sendApi() {
 }
 
 sendApi()
-var timeoutID = setInterval(()=>sendApi(), 86400);
+var timeoutID = setInterval(()=>sendApi(), 86400000);
 

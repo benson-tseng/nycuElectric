@@ -35,7 +35,9 @@ let config = {
   data: data
 };
 
-async function testApi() {
+async function sendApi() {
+  let date = new Date(Date.now()).toString()
+  console.log(date)
   // get balance
   let response = await axios.request(config)
   let htmlData = parse(response.data)
@@ -43,14 +45,16 @@ async function testApi() {
 
   // push message
   const message = new URLSearchParams();
-  message.append('message', '剩餘電費: ' + balance);
+  message.append('message', date+'\n剩餘電費: ' + balance);
   response = await axios.post(webhook_url, message, {
     headers: {
       'content-type': 'application/x-www-form-urlencoded;charset=utf-8',
       'Authorization': 'Bearer ' + oauthToken
     }
   })
+  console.log("發送訊息完成，剩餘電費: "+balance)
 }
 
-testApi()
+sendApi()
+var timeoutID = setInterval(()=>sendApi(), 86400);
 

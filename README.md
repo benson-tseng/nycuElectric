@@ -4,7 +4,7 @@ this system will get your lastly eletricity balance and use line notify to infor
 and writing the record.txt file to record the daliy usage of your eletricity
 
 ## setting enviroment variable
-after pulling the code, first set your .env file
+after cloneing the code, first set your .env file
 ```
 token = your_line_notify_auth_token
 phone = your_phone_num

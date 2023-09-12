@@ -2,12 +2,19 @@ import axios from 'axios';
 import qs from 'qs';
 import { parse } from 'node-html-parser';
 import 'dotenv/config';
+import fs from 'fs';
 
 let webhook_url = 'https://notify-api.line.me/api/notify';
 let oauthToken = process.env.token;
 let phoneNum = process.env.phone;
 let roomID = process.env.room;
+let balance
 
+// get date
+let date = new Date(Date.now())
+console.log(date.toString())
+
+// set request payload
 let data = qs.stringify({
   'ctl00$Content$BootstrapFormLayout1$edRoomNo$State': '{&quot;validationState&quot;:&quot;&quot;}',
   'ctl00$Content$BootstrapFormLayout1$edRoomNo': roomID,
@@ -24,6 +31,7 @@ let data = qs.stringify({
   '__VIEWSTATEGENERATOR': 'CA0B0334'
 });
 
+// set request config
 let config = {
   method: 'post',
   maxBodyLength: Infinity,
@@ -36,25 +44,34 @@ let config = {
 };
 
 async function sendApi() {
-  let date = new Date(Date.now()).toString()
-  console.log(date)
   // get balance
   let response = await axios.request(config)
   let htmlData = parse(response.data)
   let balance = htmlData.querySelector("#Content_BootstrapFormLayout1_edBalance_I").attributes.value;
 
-  // push message
+  // push line notification
   const message = new URLSearchParams();
-  message.append('message', date+'\n剩餘電費: ' + balance);
+  message.append('message', date + '\n剩餘電費: ' + balance);
   response = await axios.post(webhook_url, message, {
     headers: {
       'content-type': 'application/x-www-form-urlencoded;charset=utf-8',
       'Authorization': 'Bearer ' + oauthToken
     }
   })
-  console.log("發送訊息完成，剩餘電費: "+balance)
+  console.log("發送訊息完成，剩餘電費: " + balance)
+  return balance;
 }
 
-sendApi()
-var timeoutID = setInterval(()=>sendApi(), 86400000);
+
+try {
+  balance = await sendApi();
+  fs.appendFile('record.txt', '\n' + date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate() + ' ' + balance, function (err) {
+    if (err)
+      console.log(err);
+    else
+      console.log('Append record complete.');
+  });
+} catch (e) {
+  console.log(e)
+}
 
